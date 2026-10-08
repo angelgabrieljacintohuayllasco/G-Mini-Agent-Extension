@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "G-Mini Agent Bridge",
+  "short_name": "G-Mini Bridge",
+  "description": "Conecta el navegador con G-Mini Agent para que el agente navegue, lea y opere páginas por ti.",
+  "version": "0.0.0",
+  "homepage_url": "https://github.com/angelgabrieljacintohuayllasco/G-Mini-Agent-Extension",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "G-Mini Agent Bridge",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "permissions": ["alarms", "downloads", "scripting", "storage", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; base-uri 'none'; form-action 'none'"
+  }
+}
