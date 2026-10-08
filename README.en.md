@@ -117,8 +117,10 @@ confirmation), clear the activity log and reset to defaults.
   must be enabled in the options page and confirmed.
 - Only the 24 protocol commands are accepted, and their parameters are validated
   before touching the browser.
-- The `eval` command keeps the previous extension's mechanism, isolated in a
-  single file. Chromium blocks it under Manifest V3 (see the protocol document).
+- The `eval` command runs the script in the page's main world, with the page's
+  privileges and none of the extension's. It is the only place that turns text
+  into code; if the page's CSP forbids it, the error says so and suggests
+  `browser_extract` or `browser_snapshot`.
 - No telemetry. Page data goes only to the G-Mini Agent core you configure, which
   may forward it to the model provider you set up there.
 - The activity log lives in session memory only and never contains typed text or

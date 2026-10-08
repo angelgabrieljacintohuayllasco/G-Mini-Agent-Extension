@@ -180,9 +180,11 @@ Respecto de la extensión anterior se quitaron `cookies`, `webNavigation` y
   remoto exige activarlo en Opciones y confirmar un aviso.
 - Solo ejecuta los 24 comandos del protocolo; cualquier otro recibe `Unknown
   command` y los parámetros se validan antes de tocar el navegador.
-- El comando `eval` (acción `browser_eval`) usa el mismo mecanismo que la
-  extensión anterior, aislado en un único archivo. Chromium lo bloquea en Manifest
-  V3 (ver [docs/protocol.md](docs/protocol.md#31-eval)).
+- El comando `eval` (acción `browser_eval`) ejecuta el script en el mundo
+  principal de la página, con los permisos de la página y ninguno de la extensión.
+  Es el único punto que convierte texto en código; si la CSP de la página lo
+  prohíbe, responde con un error que lo explica (ver
+  [docs/protocol.md](docs/protocol.md#31-eval)).
 - Las páginas de la extensión tienen una CSP estricta (`script-src 'self'`) y la
   interfaz nunca inserta HTML.
 - El content script solo se inyecta en la pestaña que el agente opera, cuando lo
@@ -212,7 +214,8 @@ Más detalle y cómo reportar vulnerabilidades: [SECURITY.md](SECURITY.md).
 | "Error: otro navegador o perfil tomó la conexión" | El núcleo acepta una sola extensión. Pulsa **Conectar aquí** en el navegador que quieras usar. |
 | "Probar conexión" dice que el núcleo rechazó la conexión | Comprueba que la ruta sea `/ws/extension` y que G-Mini Agent esté actualizado. |
 | `Cannot access this page` | Los navegadores no dejan operar páginas internas (`chrome://`, `edge://`, `about:`, tiendas de extensiones). Navega a un sitio normal. |
-| `browser_eval` falla con `Eval error: Refused to evaluate...` | Limitación de Manifest V3 en Chromium (ver [protocolo](docs/protocol.md#31-eval)). |
+| `browser_eval` responde "Esta página no permite ejecutar código (CSP)" | La política de seguridad de ese sitio prohíbe evaluar código. Usa `browser_extract` o `browser_snapshot` para leerlo. |
+| `browser_eval` espera una aprobación | Con la autonomía por defecto, G-Mini Agent pide confirmación antes de ejecutar scripts que no son de solo lectura. |
 | Firefox: no opera ningún sitio | Concede el acceso a todos los sitios en `about:addons` > Permisos. |
 | Se desconecta al minimizar o tras un rato | La alarma de vigilancia reconecta en menos de 30 s. Si persiste, revisa que el antivirus o un firewall no bloquee `127.0.0.1:8765`. |
 | Quiero ver los registros | `chrome://extensions` > G-Mini Agent Bridge > "service worker" abre la consola del fondo. |

@@ -95,7 +95,7 @@ indica.
 | `extract` | `browser_extract` | `selector` (body) | `text` (hasta 8000 caracteres) |
 | `get_dom` | skill `browser_get_dom` | `selector` (body), `max_depth` (6), `max_length` (12000) | `html` |
 | `snapshot` | `browser_snapshot` | | `url`, `title`, `text` |
-| `eval` | `browser_eval` | `script` | `result` (texto o null) |
+| `eval` | `browser_eval` | `script` | `result` (valor serializable o null) |
 | `screenshot` | `browser_screenshot` | (el núcleo espera 10 s) | `image_base64` (PNG sin prefijo), `format`, `url`, `title` |
 | `page_info` | `browser_page_info`, `browser_state` | | `url`, `title`, `viewport: {width, height}` |
 | `tabs_list` | `browser_tabs` | | `tabs: [{index, id, url, title, active}]`, `count` |
@@ -125,25 +125,38 @@ Notas:
 
 ### 3.1 `eval`
 
-Se conserva el mecanismo de la extensión anterior, aislado en
-`src/content/run-page-script.js`: el script se envuelve como cuerpo de una función
-`async` y corre en el mundo aislado del content script. Solo devuelve un valor si
-usa `return` (`"return document.title"`), y el resultado se convierte a texto.
+El script corre en el **mundo principal de la página**, con
+`scripting.executeScript({target: {tabId}, world: "MAIN", func, args: [script]})`
+(`src/background/page-script.js`, el único lugar que convierte texto en código).
+Manifest V3 prohíbe evaluar texto dentro de la extensión, incluido el mundo
+aislado del content script; por eso la extensión anterior fallaba siempre en
+Chromium.
 
-**Limitación conocida.** Chromium aplica a los content scripts de Manifest V3 una
-política de seguridad sin `'unsafe-eval'`, así que `new Function` falla con
-`Eval error: Refused to evaluate a string as JavaScript because 'unsafe-eval' is
-not an allowed source of script...`. Ocurría igual con la extensión anterior y se
-verificó en Chrome for Testing 131, Edge 154 y Brave 155. Además, con el nivel de
-autonomía por defecto el núcleo pide aprobación humana antes de un `browser_eval`
-que no sea de solo lectura. Hacerlo funcionar exige otro mecanismo (por ejemplo
-`scripting.executeScript` con `world: "MAIN"`, sujeto a la CSP de cada página) y
-es una decisión del núcleo, no de esta extensión.
+- **Contrato**: el texto es el cuerpo de una función `async`, así que solo
+  devuelve un valor si usa `return` (`"return document.title"`). Respuesta
+  `{"success": true, "result": <valor>}` con cualquier valor serializable en JSON
+  (texto, número, booleano, lista, objeto); `undefined` llega como `null` y lo que
+  no se puede serializar (ciclos, BigInt), como texto. Chromium entrega los
+  objetos con las claves ordenadas.
+- **Contexto**: ve el DOM y las variables de JavaScript de la página, con los
+  permisos de la página y ninguno de la extensión.
+- **CSP**: si la página tiene una política sin `'unsafe-eval'` (o exige Trusted
+  Types), la respuesta es `{"success": false, "error": "Esta página no permite
+  ejecutar código (CSP); usa browser_extract o browser_snapshot", "code":
+  "csp_blocked"}`.
+- **Errores del script**: `Eval error: <mensaje>` (sintaxis o excepción).
+- **Plazo**: si el script no termina en 14 s, `Eval error: the script did not
+  finish within 14000ms`.
+- **Permisos**: usa `scripting` y los permisos de host que la extensión ya tenía.
+  En Firefox, `world: "MAIN"` existe desde la versión 128 (el mínimo es 140).
+- **Aprobación**: con la autonomía por defecto, el núcleo pide aprobación humana
+  antes de un `browser_eval` que no clasifica como de solo lectura.
 
 ### 3.2 Mensajes de error
 
 Se mantienen en inglés y con el mismo texto que la extensión anterior, porque el
-núcleo y el agente los leen tal cual:
+núcleo y el agente los leen tal cual. La excepción es el error de CSP de `eval`,
+que el núcleo pidió en español:
 
 | Situación | `error` |
 |---|---|
@@ -161,7 +174,8 @@ núcleo y el agente los leen tal cual:
 | Página interna del navegador | `Cannot access this page (<origen>): <detalle>` |
 | Content script sin respuesta | `Content script timeout for '<acción>' after <ms>ms` |
 | URL rechazada | `Blocked URL scheme: <esquema>` o `Invalid URL: <texto>` |
-| `eval` fallido | `Eval error: <detalle>` |
+| `eval` en una página con CSP sin `'unsafe-eval'` | `Esta página no permite ejecutar código (CSP); usa browser_extract o browser_snapshot` (con `code: "csp_blocked"`) |
+| `eval` fallido o sin terminar | `Eval error: <detalle>` |
 | Captura fallida | `Screenshot failed: <detalle>` |
 
 ## 4. Validación
@@ -208,7 +222,8 @@ Todos los cambios son compatibles: el núcleo no necesita modificaciones.
 | Cambio | Motivo |
 |---|---|
 | `tabs_list` añade `count`, `tab_close` añade `remaining_tabs` y `closed_index`, `screenshot` añade `url` y `title` | El planner lee `data['count']`, `data['remaining_tabs']` y `data['url']`; con la extensión anterior esas acciones fallaban con KeyError |
-| `page_info` mide el viewport con una acción propia | Antes usaba `eval`, que no devolvía valor y además está bloqueado por la CSP |
+| `eval` corre en el mundo principal de la página y devuelve valores serializables | En el content script, Manifest V3 bloqueaba siempre `new Function`; ahora solo falla si la propia página lo prohíbe por CSP, con un error que lo explica |
+| `page_info` mide el viewport con una acción propia | Antes usaba `eval`, que no devolvía valor y además estaba bloqueado |
 | `go_back`/`go_forward` recurren a `history.back()`/`forward()` en la página | Chromium omite en `tabs.goBack` las páginas abandonadas sin interacción del usuario, que son casi todas las que abre el agente |
 | `fill` en `textarea` | La extensión anterior lanzaba "Illegal invocation" |
 | `type` y `fill` en editores `contenteditable` | Gmail, WhatsApp Web o Notion no tienen `value` |

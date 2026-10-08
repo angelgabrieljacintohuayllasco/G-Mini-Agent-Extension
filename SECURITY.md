@@ -29,10 +29,12 @@ iniciadas de la persona. Por eso:
    navegador: tamaño, `id`, nombre del comando y parámetros. Lo demás se descarta o
    recibe `Unknown command`.
 3. **Ejecución de código.** El único punto que convierte texto en código es el
-   comando `eval`, en `src/content/run-page-script.js`, que conserva el mecanismo
-   de la extensión anterior. Las reglas `no-eval` y `no-new-func` de ESLint y una
-   prueba unitaria impiden añadir otros. En Chromium, la CSP de Manifest V3 lo
-   bloquea; el núcleo, además, pide aprobación humana para scripts que no son de
+   comando `eval`, en `src/background/page-script.js`. El script se inyecta con
+   `scripting.executeScript` en el mundo principal de la página: tiene los permisos
+   de esa página (y su CSP decide si puede evaluar código), pero ningún acceso a la
+   extensión ni a sus APIs. Nunca se evalúa texto dentro de la extensión. Las reglas
+   `no-eval` y `no-new-func` de ESLint y una prueba unitaria impiden añadir otros
+   puntos. El núcleo, además, pide aprobación humana para scripts que no son de
    solo lectura.
 4. **Navegación.** `navigate` y `tab_new` rechazan `javascript:` y `vbscript:`,
    para que no sirvan de atajo al comando `eval`.

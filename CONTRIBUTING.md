@@ -33,24 +33,28 @@ CHROME_PATH=/ruta/a/chrome GMINI_CORE_DIR=/ruta/a/G-Mini-Agent npm run test:e2e 
   Chromium, Edge y Brave.
 - `--core=real` arranca el núcleo con `python -m backend.main --headless`, un
   `GMINI_HOME` temporal y un token propio, y envía las acciones por
-  `POST /api/actions/execute`. Usa `GMINI_CORE_PYTHON` si el intérprete no está en
-  `venv/` del repositorio del núcleo. El núcleo escribe sus logs en su propia
-  carpeta `logs/` aunque haya `GMINI_HOME`; la prueba avisa qué archivos dejó.
+  `POST /api/actions/execute`. Para que `browser_eval` no espere una aprobación
+  humana, escribe `agent.autonomy_level: libre` en el `config.user.yaml` de ese
+  `GMINI_HOME` temporal (nunca en el de la persona). Usa `GMINI_CORE_PYTHON` si el
+  intérprete no está en `venv/` del repositorio del núcleo.
+- La prueba de `eval` usa `fixtures/csp.html`, que el servidor de pruebas entrega
+  con `Content-Security-Policy: script-src 'self'` para comprobar el error de CSP.
 - Para Firefox: `npx web-ext lint --source-dir dist/firefox`. El único aviso
-  esperado es `DANGEROUS_EVAL`.
+  esperado es `DANGEROUS_EVAL`, por el comando `eval`.
 
 ## Reglas del proyecto
 
 - **Compatibilidad con el núcleo.** Los nombres de eventos, comandos, parámetros
   y campos de respuesta de [docs/protocol.md](docs/protocol.md) son un contrato.
   Solo se añaden campos; nunca se renombran ni se quitan. Los mensajes de error
-  del protocolo se mantienen en inglés.
+  del protocolo se mantienen en inglés, salvo el de CSP de `eval`, que el núcleo
+  pidió en español.
 - **Un comando nuevo** necesita: entrada en `COMMAND_SPECS`
   (`src/shared/protocol.js`), manejador en `src/background/commands/index.js`,
   etiqueta en `src/shared/activity.js`, fila en `docs/protocol.md` y pruebas. Las
   pruebas unitarias fallan si alguna lista no coincide.
-- **Sin `eval` nuevo.** `src/content/run-page-script.js` es el único punto que
-  convierte texto en código.
+- **Sin `eval` nuevo.** `src/background/page-script.js` es el único punto que
+  convierte texto en código, y lo hace en el mundo principal de la página.
 - **Sin HTML crudo** en la interfaz: `createElement` y `textContent`.
 - **Diseño.** Solo valores de `src/ui/tokens.css`; iconos SVG con trazo de Lucide
   (2 px); revisa los dos temas y `prefers-reduced-motion`.

@@ -34,6 +34,10 @@ de G-Mini Agent no necesita cambios.
 
 - `tabs_list` devuelve `count`, `tab_close` devuelve `remaining_tabs` y
   `screenshot` devuelve `url` y `title`, que el planner del núcleo ya leía.
+- `eval` se ejecuta en el mundo principal de la página con
+  `scripting.executeScript` y devuelve valores serializables. Si la CSP de la
+  página lo prohíbe, responde "Esta página no permite ejecutar código (CSP); usa
+  browser_extract o browser_snapshot".
 - `page_info` mide el viewport sin depender de `eval`.
 - `go_back` y `go_forward` usan `history.back()`/`forward()` cuando Chromium omite
   la entrada anterior porque la página no recibió interacción del usuario.
@@ -45,6 +49,8 @@ de G-Mini Agent no necesita cambios.
 
 ### Corregido
 
+- `eval` fallaba siempre en Chromium: Manifest V3 bloquea `new Function` en el
+  content script.
 - `fill` en `textarea` fallaba con "Illegal invocation".
 - `wait_for` no veía elementos `position: fixed` y cortaba esperas de más de 15 s.
 - Enter en un formulario no lo enviaba.
@@ -54,6 +60,7 @@ de G-Mini Agent no necesita cambios.
 
 - Solo se conecta a direcciones locales salvo permiso explícito.
 - `navigate` rechaza `javascript:` y `vbscript:`.
-- El mecanismo de `eval` queda aislado en `src/content/run-page-script.js`.
+- `eval` queda aislado en `src/background/page-script.js` y nunca evalúa texto
+  dentro de la extensión.
 
 [1.0.0]: https://github.com/angelgabrieljacintohuayllasco/G-Mini-Agent-Extension/releases/tag/v1.0.0
