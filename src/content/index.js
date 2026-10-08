@@ -10,17 +10,11 @@ import { click, fill, hover, scroll, select, type } from './interaction.js';
 import { press } from './keyboard.js';
 import { removeOverlays } from './overlays.js';
 import { extract, getDom, viewport } from './reading.js';
-import { runPageScript } from './run-page-script.js';
 import { waitFor } from './waiting.js';
 
-async function evaluateScript({ script }) {
-  try {
-    return { success: true, result: await runPageScript(script) };
-  } catch (error) {
-    return { success: false, error: `Eval error: ${error?.message ?? error}` };
-  }
-}
-
+// El comando eval no pasa por aquí: corre en el mundo principal de la página
+// (src/background/page-script.js), porque Manifest V3 bloquea la evaluación de
+// texto en el mundo aislado del content script.
 const ACTIONS = Object.freeze({
   click,
   type,
@@ -31,7 +25,6 @@ const ACTIONS = Object.freeze({
   select,
   extract,
   get_dom: getDom,
-  eval: evaluateScript,
   wait_for: waitFor,
   remove_overlays: removeOverlays,
   // Acciones internas del fondo; no son comandos del núcleo.

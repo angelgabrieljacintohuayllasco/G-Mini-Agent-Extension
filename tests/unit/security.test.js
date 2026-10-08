@@ -9,7 +9,7 @@ import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const SRC = fileURLToPath(new URL('../../src/', import.meta.url));
-const EVAL_MODULE = path.join('content', 'run-page-script.js');
+const EVAL_MODULE = path.join('background', 'page-script.js');
 
 function sourceFiles(extension) {
   return readdirSync(SRC, { recursive: true })
@@ -18,7 +18,7 @@ function sourceFiles(extension) {
 }
 
 describe('invariantes de seguridad', () => {
-  it('solo run-page-script.js convierte texto en código', () => {
+  it('solo page-script.js convierte texto en código', () => {
     const offenders = sourceFiles('.js')
       .filter(({ file }) => file !== EVAL_MODULE)
       .filter(({ text }) => /\beval\s*\(|new\s+Function\s*\(|setTimeout\(\s*['"`]/.test(text))
@@ -26,9 +26,10 @@ describe('invariantes de seguridad', () => {
     assert.deepEqual(offenders, []);
   });
 
-  it('el módulo de eval conserva el mecanismo de la extensión original', () => {
+  it('el módulo de eval conserva el contrato de la extensión original y corre en la página', () => {
     const text = readFileSync(path.join(SRC, EVAL_MODULE), 'utf8');
-    assert.match(text, /new Function\(`return \(async \(\) => \{ \$\{script\} \}\)\(\)`\)/);
+    assert.match(text, /new Function\(`return \(async \(\) => \{ \$\{code\} \}\)\(\)`\)/);
+    assert.match(text, /world: 'MAIN'/);
   });
 
   it('la interfaz nunca inserta HTML crudo', () => {

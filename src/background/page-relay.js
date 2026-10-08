@@ -46,7 +46,8 @@ function sendWithTimeout(api, tabId, message, action, timeoutMs) {
   return Promise.race([request, timeout]).finally(() => clearTimeout(timer));
 }
 
-function describePageOrigin(rawUrl) {
+/** Origen de la página para los mensajes de error, sin ruta ni parámetros. */
+export function describePageOrigin(rawUrl) {
   if (!rawUrl) {
     return 'unknown page';
   }

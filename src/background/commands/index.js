@@ -1,3 +1,4 @@
+import { evaluateInPage } from '../page-script.js';
 import { downloadsList } from './downloads.js';
 import { goBack, goForward, navigate, waitLoad } from './navigation.js';
 import { pageInfo, relayToPage, screenshot, snapshot } from './page.js';
@@ -25,7 +26,7 @@ export function createCommandHandlers(api) {
     remove_overlays: inPage('remove_overlays'),
     extract: inPage('extract'),
     get_dom: inPage('get_dom'),
-    eval: inPage('eval'),
+    eval: (params) => evaluateInPage(api, params),
     snapshot: () => snapshot(api),
     screenshot: () => screenshot(api),
     page_info: () => pageInfo(api),
