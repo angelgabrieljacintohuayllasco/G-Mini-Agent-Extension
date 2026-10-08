@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint, pruebas y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Pruebas unitarias
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Validar manifiestos y zips
+        run: npm run check:dist
+
+      - name: Validar el paquete de Firefox con web-ext
+        run: npx --yes web-ext@10.7.0 lint --source-dir dist/firefox
+
+      - name: Guardar los paquetes
+        uses: actions/upload-artifact@v4
+        with:
+          name: g-mini-agent-extension-${{ github.sha }}
+          path: dist/*.zip
+          if-no-files-found: error

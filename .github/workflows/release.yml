@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Construir y publicar
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Comprobar que la etiqueta coincide con package.json
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "La etiqueta ${GITHUB_REF_NAME} no coincide con la versión ${version} de package.json." >&2
+            exit 1
+          fi
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Pruebas unitarias
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Validar manifiestos y zips
+        run: npm run check:dist
+
+      - name: Notas de la versión
+        run: node scripts/release-notes.mjs "${GITHUB_REF_NAME#v}" dist/RELEASE_NOTES.md
+
+      - name: Publicar la Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: dist/RELEASE_NOTES.md
+          files: |
+            dist/g-mini-agent-extension-chromium-v*.zip
+            dist/g-mini-agent-extension-firefox-v*.zip
+          fail_on_unmatched_files: true
