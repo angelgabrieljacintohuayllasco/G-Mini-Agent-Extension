@@ -372,6 +372,7 @@ async function main() {
   await mkdir(OUTPUT, { recursive: true });
 
   const workerLog = [];
+  const profileDir = path.join(OUTPUT, `profile-${mode}-${Date.now()}`);
   let fixtures;
   let core;
   let browser;
@@ -398,7 +399,7 @@ async function main() {
       executablePath: process.env.CHROME_PATH,
       headless: true,
       timeout: 30000,
-      userDataDir: path.join(OUTPUT, `profile-${mode}-${Date.now()}`),
+      userDataDir: profileDir,
       ignoreDefaultArgs: ['--disable-extensions'],
       args: [`--disable-extensions-except=${extensionDir}`, `--load-extension=${extensionDir}`, '--no-first-run', '--no-default-browser-check'],
       defaultViewport: { width: 1280, height: 800 },
@@ -542,7 +543,14 @@ async function main() {
       return 'cancelar no guarda nada';
     });
   } finally {
-    for (const release of [() => browser?.close(), () => core?.stop(), () => fixtures?.close()]) {
+    const releases = [
+      () => browser?.close(),
+      () => core?.stop(),
+      () => fixtures?.close(),
+      // El perfil temporal de Chromium ocupa decenas de MB por ejecución.
+      () => rm(profileDir, { recursive: true, force: true, maxRetries: 3 }),
+    ];
+    for (const release of releases) {
       await withTimeout(Promise.resolve().then(release), 15000, 'limpieza').catch((error) => console.warn(error.message));
     }
   }
