@@ -75,12 +75,19 @@ async function freePort() {
   return port;
 }
 
+// Política de una página que no admite evaluar código (sin 'unsafe-eval').
+const STRICT_CSP = "script-src 'self'; object-src 'none'";
+
 async function startFixtureServer() {
   const server = http.createServer(async (request, response) => {
     const name = path.basename(new URL(request.url, 'http://x').pathname);
     try {
       const body = await readFile(path.join(FIXTURES, name));
-      response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(body);
+      const headers = { 'content-type': 'text/html; charset=utf-8' };
+      if (name === 'csp.html') {
+        headers['content-security-policy'] = STRICT_CSP;
+      }
+      response.writeHead(200, headers).end(body);
     } catch {
       response.writeHead(404).end('no encontrado');
     }
@@ -248,14 +255,31 @@ function protocolScenario(driver, fixture) {
       expect(data.url.endsWith('/form.html'), 'falta la URL');
       return `${Math.round((data.image_base64.length * 3) / 4 / 1024)} KB`;
     }],
-    ['eval (mecanismo original, informativo)', async () => {
+    ['eval en el mundo de la página (sin CSP)', async () => {
+      const title = await act('browser_eval', { script: 'return document.title' });
+      expect(title.success, title.error);
+      expectEqual(title.result, 'Formulario G-Mini', 'document.title');
+      // La variable la define un script de la página: el mundo aislado no la vería.
+      const pageValue = await act('browser_eval', { script: 'return window.gminiPageValue' });
+      expectEqual(pageValue.result, 'mundo principal', 'variable de la página');
+      const summary = await act('browser_eval', {
+        script: "return { titulo: document.title, campos: document.querySelectorAll('input, textarea').length }",
+      });
+      // Chromium devuelve los objetos con las claves ordenadas: se comparan campo a campo.
+      expectEqual(summary.result?.titulo, 'Formulario G-Mini', 'objeto.titulo');
+      expectEqual(summary.result?.campos, 2, 'objeto.campos');
+      return `${JSON.stringify(title.result)}, ${JSON.stringify(pageValue.result)}, ${JSON.stringify(summary.result)}`;
+    }],
+    ['eval en una página con CSP sin unsafe-eval', async () => {
+      const page = await act('browser_navigate', { url: fixture('csp.html') });
+      expect(page.success, page.error);
       const data = await act('browser_eval', { script: 'return document.title' });
-      if (data.success) {
-        expectEqual(data.result, 'Formulario G-Mini', 'result');
-        return 'el navegador permitió new Function en el content script';
-      }
-      expect(/^Eval error: /.test(data.error), `error inesperado: ${data.error}`);
-      return `bloqueado por el navegador, como con la extensión anterior: ${data.error.slice(0, 90)}`;
+      expectEqual(data.success, false, 'success');
+      expectEqual(data.error, 'Esta página no permite ejecutar código (CSP); usa browser_extract o browser_snapshot', 'error');
+      // La alternativa que sugiere el error funciona en la misma página.
+      expectEqual((await act('browser_extract', { selector: 'h1' })).text, 'Página con CSP estricta', 'browser_extract');
+      await act('browser_navigate', { url: fixture('form.html') });
+      return data.error;
     }],
     ['listar pestañas (count)', async () => {
       const data = await act('browser_tabs');
@@ -384,8 +408,15 @@ async function main() {
 
     if (mode === 'real') {
       expect(process.env.GMINI_CORE_DIR, 'define GMINI_CORE_DIR con la ruta del repositorio G-Mini-Agent');
-      core = await startRealCore({ coreDir: process.env.GMINI_CORE_DIR, python: process.env.GMINI_CORE_PYTHON, port, workDir: OUTPUT });
+      core = await startRealCore({
+        coreDir: process.env.GMINI_CORE_DIR,
+        python: process.env.GMINI_CORE_PYTHON,
+        port,
+        workDir: OUTPUT,
+        autonomyLevel: 'libre',
+      });
       console.log(`Núcleo real ${core.health.version} en 127.0.0.1:${port} (GMINI_HOME=${core.home})`);
+      console.log('Aprobación de browser_eval simulada: agent.autonomy_level=libre solo en ese GMINI_HOME temporal.');
     } else {
       core = await startMockCore({ port });
       console.log(`Núcleo simulado en 127.0.0.1:${port}`);

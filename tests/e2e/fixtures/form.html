@@ -44,6 +44,8 @@
         byId('submitted').textContent = 'yes';
       });
       setTimeout(() => { byId('later').hidden = false; }, 600);
+      // Solo un script que corre en el mundo principal de la página puede leer esta variable.
+      window.gminiPageValue = 'mundo principal';
     </script>
   </body>
 </html>

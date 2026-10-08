@@ -10,7 +10,7 @@ import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import { existsSync } from 'node:fs';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import readline from 'node:readline';
 
@@ -43,9 +43,17 @@ async function waitForHealth(port, child) {
   throw new Error(`el núcleo no respondió en ${STARTUP_TIMEOUT_MS / 1000} s`);
 }
 
-export async function startRealCore({ coreDir, python = defaultPython(coreDir), port, workDir }) {
+/**
+ * autonomyLevel se escribe en el config.user.yaml del GMINI_HOME temporal. Con
+ * 'libre' el núcleo no pide aprobación humana para browser_eval: así la prueba
+ * simula esa aprobación sin tocar la configuración de la persona.
+ */
+export async function startRealCore({ coreDir, python = defaultPython(coreDir), port, workDir, autonomyLevel = null }) {
   const home = path.join(workDir, `core-home-${Date.now()}`);
   await mkdir(home, { recursive: true });
+  if (autonomyLevel) {
+    await writeFile(path.join(home, 'config.user.yaml'), `agent:\n  autonomy_level: ${autonomyLevel}\n`);
+  }
   const token = randomBytes(32).toString('hex');
   const child = spawn(python, ['-m', 'backend.main', '--headless', '--port', String(port)], {
     cwd: coreDir,
@@ -112,9 +120,12 @@ export async function startRealCore({ coreDir, python = defaultPython(coreDir), 
           setTimeout(resolve, 10000);
         });
       }
-      if (logStamp) {
-        // backend/utils/logger.py escribe en <núcleo>/logs aunque haya GMINI_HOME.
-        console.warn(`Aviso: el núcleo dejó sus logs en ${path.join(coreDir, 'logs')} (gmini_${logStamp}.log y gmini_detailed_${logStamp}.log).`);
+      // Los núcleos anteriores a 44c0d2a escribían los logs en <núcleo>/logs aunque hubiera GMINI_HOME.
+      const strayLogs = logStamp
+        ? [`gmini_${logStamp}.log`, `gmini_detailed_${logStamp}.log`].filter((name) => existsSync(path.join(coreDir, 'logs', name)))
+        : [];
+      if (strayLogs.length > 0) {
+        console.warn(`Aviso: el núcleo dejó logs fuera del GMINI_HOME temporal: ${strayLogs.map((name) => path.join(coreDir, 'logs', name)).join(', ')}`);
       }
     },
   };
