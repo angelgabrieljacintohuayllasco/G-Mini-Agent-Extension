@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Formulario G-Mini</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 24px; min-height: 3000px; }
+      form { display: grid; gap: 8px; max-width: 360px; }
+      #editor { min-height: 40px; border: 1px solid #999; }
+      .cookie-banner { position: fixed; inset: auto 0 0 0; height: 80px; z-index: 2000; background: #222; color: #fff; }
+    </style>
+  </head>
+  <body>
+    <h1>Formulario de prueba</h1>
+    <form id="form">
+      <input id="name" name="name" />
+      <textarea id="bio"></textarea>
+      <select id="color">
+        <option value="red">Rojo</option>
+        <option value="blue">Azul</option>
+      </select>
+      <div id="editor" contenteditable="true"></div>
+      <button id="counter-button" type="button">Contar</button>
+      <span id="counter">0</span>
+      <div id="hover-target">Pasa el cursor</div>
+      <span id="hover-state">idle</span>
+      <button type="submit">Enviar</button>
+    </form>
+    <p id="submitted">no</p>
+    <div id="echo-name"></div>
+    <div id="echo-bio"></div>
+    <div id="later" hidden>Listo</div>
+    <div class="cookie-banner" id="cookie-banner">Aceptar cookies</div>
+    <script>
+      const byId = (id) => document.getElementById(id);
+      byId('name').addEventListener('input', () => { byId('echo-name').textContent = byId('name').value; });
+      byId('bio').addEventListener('input', () => { byId('echo-bio').textContent = byId('bio').value; });
+      byId('counter-button').addEventListener('click', () => {
+        byId('counter').textContent = String(Number(byId('counter').textContent) + 1);
+      });
+      byId('hover-target').addEventListener('mouseover', () => { byId('hover-state').textContent = 'hover'; });
+      byId('form').addEventListener('submit', (event) => {
+        event.preventDefault();
+        byId('submitted').textContent = 'yes';
+      });
+      setTimeout(() => { byId('later').hidden = false; }, 600);
+    </script>
+  </body>
+</html>
