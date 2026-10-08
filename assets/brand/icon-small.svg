@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <title>G-Mini Agent</title>
+  <!-- Versión simplificada para 16 y 32 px: sin rayos ni separación entre anillo y ojo -->
+  <defs>
+    <linearGradient id="shell" x1="18" y1="10" x2="110" y2="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5fc9f3" />
+      <stop offset="0.5" stop-color="#3563e9" />
+      <stop offset="1" stop-color="#6c4ee6" />
+    </linearGradient>
+  </defs>
+  <path fill="url(#shell)" d="M116 60A52 52 0 1 1 98.795 21.357L85.412 36.22A32 32 0 1 0 96 60Z" />
+  <path fill="url(#shell)" d="M59.47 111.8 L38 126 L34.17 102.6 Z" />
+  <circle cx="64" cy="60" r="32" fill="#12205e" />
+  <rect x="80" y="59" width="28" height="14" fill="url(#shell)" />
+  <circle cx="64" cy="60" r="12" fill="#ffffff" />
+</svg>

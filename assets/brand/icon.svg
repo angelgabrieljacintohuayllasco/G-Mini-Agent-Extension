@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <title>G-Mini Agent</title>
+  <defs>
+    <linearGradient id="shell" x1="18" y1="10" x2="110" y2="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5fc9f3" />
+      <stop offset="0.5" stop-color="#3563e9" />
+      <stop offset="1" stop-color="#6c4ee6" />
+    </linearGradient>
+    <radialGradient id="iris" cx="58" cy="54" r="34" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2f5be0" />
+      <stop offset="1" stop-color="#0e1a4f" />
+    </radialGradient>
+    <radialGradient id="pupil" cx="61" cy="57" r="11" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" />
+      <stop offset="0.55" stop-color="#e3f3ff" />
+      <stop offset="1" stop-color="#8fcaff" />
+    </radialGradient>
+  </defs>
+  <!-- Burbuja de diálogo: el anillo abierto arriba a la derecha forma la G -->
+  <path fill="url(#shell)" d="M114 60A50 50 0 1 1 97.457 22.843L86.75 34.733A34 34 0 1 0 98 60Z" />
+  <path fill="url(#shell)" d="M59.64 109.81 L40 124 L35.32 100.96 Z" />
+  <!-- Ojo -->
+  <circle cx="64" cy="60" r="27" fill="url(#iris)" />
+  <!-- Barra de la G, que apunta a la pupila -->
+  <rect x="80" y="60" width="26" height="11" fill="url(#shell)" />
+  <g stroke="#8fcaff" stroke-width="2.5" stroke-linecap="round" opacity="0.9">
+    <path d="M73.19 50.81 L76.73 47.27" />
+    <path d="M64 47 L64 42" />
+    <path d="M54.81 50.81 L51.27 47.27" />
+    <path d="M54.81 69.19 L51.27 72.73" />
+    <path d="M64 73 L64 78" />
+    <path d="M73.19 69.19 L76.73 72.73" />
+  </g>
+  <circle cx="64" cy="60" r="9" fill="url(#pupil)" />
+</svg>
