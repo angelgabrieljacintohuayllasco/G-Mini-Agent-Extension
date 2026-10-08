@@ -1,0 +1,123 @@
+/*
+ * Tokens de diseño de la extensión. Nombres y valores alineados con la app de
+ * escritorio de G-Mini Agent (tema Grafito y tema claro). Ningún componente
+ * usa colores, tamaños ni duraciones fuera de esta lista.
+ */
+:root {
+  color-scheme: light dark;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-pill: 999px;
+
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-base: 14px;
+  --fs-md: 16px;
+  --fs-lg: 20px;
+  --lh-tight: 1.25;
+  --lh-base: 1.5;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+
+  --font: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Cascadia Mono", "Cascadia Code", ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --control-h-sm: 28px;
+  --control-h: 32px;
+
+  --dur-fast: 120ms;
+  --dur: 160ms;
+  --dur-slow: 200ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Tema claro */
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-hover: #eef0f3;
+  --surface-active: #e7eaef;
+  --surface-sunken: #f0f2f5;
+  --border: #dde1e7;
+  --border-strong: #c7cdd6;
+  --text: #161a21;
+  --text-secondary: #4a5260;
+  --text-muted: #636b7a;
+
+  --accent: #3563e9;
+  --accent-hover: #4d7cff;
+  --accent-text: #2a50c4;
+  --accent-soft: rgba(53, 99, 233, 0.1);
+  --on-accent: #ffffff;
+
+  --success: #15803d;
+  --success-soft: rgba(21, 128, 61, 0.1);
+  --warning: #a85d00;
+  --warning-soft: rgba(168, 93, 0, 0.12);
+  --danger: #c53030;
+  --danger-soft: rgba(197, 48, 48, 0.1);
+  --danger-fill: #c53030;
+  --neutral: #8a93a3;
+  --neutral-soft: rgba(99, 107, 122, 0.14);
+
+  --shadow-overlay: 0 12px 32px rgba(16, 24, 40, 0.16), 0 1px 2px rgba(16, 24, 40, 0.08);
+  --backdrop: rgba(22, 26, 33, 0.32);
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1115;
+    --surface: #1b1f27;
+    --surface-hover: #232833;
+    --surface-active: #2a303c;
+    --surface-sunken: #13161c;
+    --border: #272c36;
+    --border-strong: #363c49;
+    --text: #e7e9ee;
+    --text-secondary: #a4abb9;
+    --text-muted: #838b9b;
+
+    --accent-text: #7097ff;
+    --accent-soft: rgba(77, 124, 255, 0.16);
+
+    --success: #3fb97c;
+    --success-soft: rgba(63, 185, 124, 0.14);
+    --warning: #e9a23b;
+    --warning-soft: rgba(233, 162, 59, 0.14);
+    --danger: #f06464;
+    --danger-soft: rgba(240, 100, 100, 0.14);
+    /* Relleno de botones destructivos: contraste AA con texto blanco. */
+    --danger-fill: #c93b3b;
+    --neutral: #6b7383;
+    --neutral-soft: rgba(131, 139, 155, 0.16);
+
+    --shadow-overlay: 0 16px 40px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.4);
+    --backdrop: rgba(5, 6, 9, 0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur: 0ms;
+    --dur-slow: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

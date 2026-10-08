@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Opciones · G-Mini Agent Bridge</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="page-header">
+        <img class="brand-mark" src="icons/mark.svg" width="32" height="32" alt="" />
+        <div class="brand-text">
+          <h1 class="page-title">G-Mini Agent Bridge</h1>
+          <p class="page-subtitle">Opciones de la extensión</p>
+        </div>
+        <div class="status-pill" id="status-pill" data-tone="neutral" aria-live="polite">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="status-pill-label">Sin datos</span>
+        </div>
+      </header>
+
+      <main class="sections">
+        <section class="card" aria-labelledby="connection-title">
+          <div class="card-header">
+            <h2 class="card-title" id="connection-title">Conexión</h2>
+            <p class="card-description">La extensión se conecta a G-Mini Agent en tu equipo y ejecuta las acciones que el agente le pide.</p>
+          </div>
+
+          <div class="row">
+            <div class="row-text">
+              <p class="row-label" id="enabled-label">Conectar con G-Mini Agent</p>
+              <p class="row-help">En pausa, la extensión cierra la conexión y no ejecuta acciones.</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" role="switch" id="enabled-toggle" aria-labelledby="enabled-label" />
+              <span class="switch-track"></span>
+            </label>
+          </div>
+
+          <form class="row" id="port-form" novalidate>
+            <div class="row-text">
+              <label class="row-label" for="port-input">Puerto</label>
+              <p class="row-help">Puerto donde escucha G-Mini Agent. Por defecto, 8765.</p>
+              <p class="field-error" id="port-error" role="alert" hidden></p>
+            </div>
+            <div class="row-control">
+              <input class="input mono port-input" id="port-input" type="text" inputmode="numeric" autocomplete="off" aria-describedby="port-error" />
+              <button class="button button-secondary" type="submit">Guardar</button>
+            </div>
+          </form>
+
+          <form class="row row-stacked" id="server-form" novalidate>
+            <div class="row-text">
+              <label class="row-label" for="server-url">Dirección completa</label>
+              <p class="row-help">Para cambiar el host o la ruta. Debe empezar con ws:// o wss://.</p>
+            </div>
+            <div class="row-control row-control-wide">
+              <input
+                class="input mono"
+                id="server-url"
+                type="text"
+                inputmode="url"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder="ws://127.0.0.1:8765/ws/extension"
+                aria-describedby="server-error"
+              />
+              <button class="button button-secondary" type="submit">Guardar</button>
+            </div>
+            <div class="field-error-row" id="server-error-row" hidden>
+              <p class="field-error" id="server-error" role="alert"></p>
+              <button class="button button-ghost" id="request-remote" type="button" hidden>Permitir servidor remoto…</button>
+            </div>
+          </form>
+
+          <div class="row">
+            <div class="row-text">
+              <p class="row-label" id="remote-label">Permitir servidores remotos</p>
+              <p class="row-help">Desactivado por defecto. Actívalo solo si G-Mini Agent corre en otro equipo tuyo, por ejemplo por Tailscale.</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" role="switch" id="remote-toggle" aria-labelledby="remote-label" />
+              <span class="switch-track"></span>
+            </label>
+          </div>
+
+          <div class="row">
+            <div class="row-text">
+              <p class="row-label">Estado</p>
+              <p class="row-help" id="status-detail">Leyendo el estado de la extensión…</p>
+            </div>
+            <div class="row-control">
+              <button class="button button-secondary" id="test-connection" type="button">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
+                <span id="test-connection-label">Probar conexión</span>
+              </button>
+            </div>
+          </div>
+          <p class="notice notice-row" id="test-result" role="status" hidden></p>
+        </section>
+
+        <section class="card" aria-labelledby="activity-title">
+          <div class="card-header">
+            <h2 class="card-title" id="activity-title">Actividad</h2>
+            <p class="card-description">
+              El popup muestra las últimas 20 acciones. Se guardan solo en la memoria de esta sesión del navegador y nunca
+              incluyen el texto que se escribe en formularios ni el contenido de los scripts.
+            </p>
+          </div>
+          <div class="row">
+            <div class="row-text">
+              <p class="row-label">Acciones registradas</p>
+              <p class="row-help" id="activity-summary">Ninguna.</p>
+            </div>
+            <button class="button button-secondary" id="clear-activity" type="button">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 6h18" />
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+              </svg>
+              Borrar actividad
+            </button>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="diagnostics-title">
+          <div class="card-header">
+            <h2 class="card-title" id="diagnostics-title">Diagnóstico</h2>
+            <p class="card-description">Datos útiles si necesitas reportar un problema.</p>
+          </div>
+          <dl class="facts">
+            <div class="fact">
+              <dt>Versión</dt>
+              <dd class="mono" id="fact-version"></dd>
+            </div>
+            <div class="fact">
+              <dt>Navegador</dt>
+              <dd id="fact-browser"></dd>
+            </div>
+            <div class="fact">
+              <dt>ID de la extensión</dt>
+              <dd class="mono" id="fact-extension-id"></dd>
+            </div>
+            <div class="fact">
+              <dt>Protocolo</dt>
+              <dd>ext:* sobre WebSocket, compatible con el núcleo de G-Mini Agent</dd>
+            </div>
+          </dl>
+          <div class="links">
+            <a class="link" href="https://github.com/angelgabrieljacintohuayllasco/G-Mini-Agent#readme" target="_blank" rel="noreferrer">
+              Documentación de G-Mini Agent
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M15 3h6v6" />
+                <path d="M10 14 21 3" />
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              </svg>
+            </a>
+            <a
+              class="link"
+              href="https://github.com/angelgabrieljacintohuayllasco/G-Mini-Agent-Extension/blob/main/docs/protocol.md"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Especificación del protocolo
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M15 3h6v6" />
+                <path d="M10 14 21 3" />
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              </svg>
+            </a>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="reset-title">
+          <div class="row">
+            <div class="row-text">
+              <h2 class="row-label" id="reset-title">Restablecer</h2>
+              <p class="row-help">Vuelve a la dirección local por defecto, reactiva la conexión y desactiva los servidores remotos.</p>
+            </div>
+            <button class="button button-danger-outline" id="reset-settings" type="button">
+              <svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+              Restablecer
+            </button>
+          </div>
+          <p class="notice notice-row" id="reset-result" role="status" hidden></p>
+        </section>
+      </main>
+    </div>
+
+    <dialog class="dialog" id="remote-dialog" aria-labelledby="remote-dialog-title">
+      <form method="dialog">
+        <div class="dialog-body">
+          <h2 class="dialog-title" id="remote-dialog-title">
+            <svg class="icon icon-lg dialog-icon-danger" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+              <path d="M12 8v4" />
+              <path d="M12 16h.01" />
+            </svg>
+            ¿Permitir un servidor remoto?
+          </h2>
+          <p class="dialog-text">
+            Quien controle ese servidor podrá abrir páginas, leer su contenido, escribir en formularios y tomar capturas en este
+            navegador, con tus sesiones iniciadas.
+          </p>
+          <ul class="dialog-list">
+            <li>Úsalo solo con un servidor de G-Mini Agent que administres tú.</li>
+            <li>Prefiere wss:// o una red privada como Tailscale.</li>
+            <li>Puedes revocarlo aquí cuando quieras.</li>
+          </ul>
+          <p class="notice" id="remote-dialog-warning" data-tone="warning" hidden></p>
+        </div>
+        <div class="dialog-actions">
+          <button class="button button-secondary" value="cancel" type="submit">Cancelar</button>
+          <button class="button button-danger" value="confirm" type="submit">Permitir servidor remoto</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="dialog" id="reset-dialog" aria-labelledby="reset-dialog-title">
+      <form method="dialog">
+        <div class="dialog-body">
+          <h2 class="dialog-title" id="reset-dialog-title">¿Restablecer la configuración?</h2>
+          <p class="dialog-text">
+            La dirección vuelve a <span class="mono" id="reset-default-url"></span>, la conexión se reactiva y se desactivan
+            los servidores remotos. La actividad registrada no se borra.
+          </p>
+        </div>
+        <div class="dialog-actions">
+          <button class="button button-secondary" value="cancel" type="submit">Cancelar</button>
+          <button class="button button-danger" value="confirm" type="submit">Restablecer</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="options.js"></script>
+  </body>
+</html>
