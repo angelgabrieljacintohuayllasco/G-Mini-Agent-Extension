@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+Thumbs.db
+
+# Artefactos de las pruebas de extremo a extremo
+tests/e2e/.output/
+
+# Proyectos generados por safari-web-extension-converter
+safari/
